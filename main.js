@@ -50,11 +50,11 @@ function splitSegmentIntoWordMap(segment) {
     var end = start + avgWordDur;
     return {
       word: word,
-      start: start.toFixed(3),
-      end: end.toFixed(3)
+      start: Number(start.toFixed(3)),
+      end: Number(end.toFixed(3))
     }
   }) 
   console.log(avgWordDur);
 }
 
-getCaptionsFromVideoId('LCZ-cxfxzvk');
+getCaptionsFromVideoId('2HFLwotYfl0');
