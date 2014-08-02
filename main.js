@@ -50,8 +50,8 @@ function splitSegmentIntoWordMap(segment) {
     var end = start + avgWordDur;
     return {
       word: word,
-      start: start,
-      end: end
+      start: start.toFixed(3),
+      end: end.toFixed(3)
     }
   }) 
   console.log(avgWordDur);
