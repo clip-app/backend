@@ -4,8 +4,13 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
+    "assert": "^1.1.1",
     "hiredis": "^0.1.17",
-    "redis": "^0.11.0"
+    "redis": "^0.11.0",
+    "superagent": "^0.18.2",
+    "underscore": "^1.6.0",
+    "xml2js": "^0.4.4",
+    "youtube-api": "^0.2.2"
   },
   "devDependencies": {},
   "scripts": {
