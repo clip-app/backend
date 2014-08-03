@@ -59,6 +59,7 @@ function getCaptionsFromVideoId(videoId) {
   });
 }
 
+var index = 0;
 function splitSegmentIntoWordMap(segment) {
   // var text = str.replace(
   var words = segment.text.split(' ');
@@ -80,8 +81,10 @@ function splitSegmentIntoWordMap(segment) {
     var start_char = segment.start + (segment.text.indexOf(word) * avgCharDur);
     var end_word = start_char + avgWordDur;
     // var end_char = start_char + avgWordDur;
+
     return {
       word: word,
+      id: ++index,
       video_id: process.argv[2],
       // start_word: Number(start_word.toFixed(3)),
       end: Number(end_word.toFixed(3)),
