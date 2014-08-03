@@ -7,10 +7,11 @@ var Youtube = require('youtube-api');
 var ent     = require('ent');
 var async   = require('async');
 var uuid    = require('node-uuid');
+var md5     = require('MD5');
 
 var search = new elasticsearch.Client({
     host: 'localhost:9200',
-      log: 'trace'
+    log: 'info'
 });
 
 Youtube.authenticate({
@@ -59,7 +60,7 @@ function getCaptionsFromVideoId(videoId, callback) {
       var wordMaps = _.flatten(_.map(segments, splitSegmentIntoWordMap));
       // var wordMaps = _.map(segments, splitSegmentIntoWordMap);
       // console.log(JSON.stringify(wordMaps))
-      callback(null, JSON.stringify(wordMaps, undefined, 2));
+      callback(null, wordMaps);
     });
   });
 }
@@ -102,15 +103,14 @@ function splitSegmentIntoWordMap(segment) {
 }
 
 assert(process.argv[2], 'expected argv[2] (YouTube Video ID')
-// console.log(process.argv)
+ //console.log(process.argv)
 
 getCaptionsFromVideoId(process.argv[2], function (err, captions) {
-  console.log("hello!");
   _.each(captions, function(caption) {
     search.index({
       index: 'words',
       type: 'word',
-      id: uuid.v1(),
+      id: md5(""+caption.video_id+caption.word+caption.start+caption.end),
       body: {
         word: caption.word,
         video_id: caption.video_id,
@@ -118,8 +118,9 @@ getCaptionsFromVideoId(process.argv[2], function (err, captions) {
         start: caption.start
       }
     }, function (err, response) {
-      console.log(err);
-      console.log(response);
+      if (err) {
+        console.log(err);
+      }
     });
   });
 });
