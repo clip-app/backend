@@ -1,4 +1,5 @@
-redis:
-  image: redis
+elasticsearch:
+  image: dockerfile/elasticsearch
   ports:
-    - "6379:6379"
+    - "9200:9200"
+    - "9300:9300"

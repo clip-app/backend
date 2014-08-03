@@ -1,4 +1,4 @@
-var redis   = require('redis');
+var elasticsearch = require('elasticsearch');
 var assert  = require('assert');
 var _       = require('underscore');
 var request = require('superagent');
@@ -6,15 +6,19 @@ var xml2js  = require('xml2js');
 var Youtube = require('youtube-api');
 var ent     = require('ent');
 var async   = require('async');
+var uuid    = require('node-uuid');
 
-// var client = redis.createClient();
+var search = new elasticsearch.Client({
+    host: 'localhost:9200',
+      log: 'trace'
+});
 
 Youtube.authenticate({
     type: 'key',
     key: 'AIzaSyAuz8nYwentOQIwSZBB6WveMa8lWgwVECw'
 });
 
-function getCaptionsFromVideoId(videoId) {
+function getCaptionsFromVideoId(videoId, callback) {
   assert(videoId);
 
   request
@@ -25,7 +29,7 @@ function getCaptionsFromVideoId(videoId) {
     }
     xml2js.parseString(res.text, function (err, result) {
       // console.dir(result.transcript);
-      var segments = _.map(result.transcript.text, function(textElement) {
+      return _.map(result.transcript.text, function(textElement) {
         var text = ent.decode(textElement._).replace('\n', ' ');
         if (text.indexOf(':') !== -1) {
           console.log('THOUGHT SPEAKER!!! (V)');
@@ -53,9 +57,8 @@ function getCaptionsFromVideoId(videoId) {
       var wordMaps = _.flatten(_.map(segments, splitSegmentIntoWordMap));
       // var wordMaps = _.map(segments, splitSegmentIntoWordMap);
       // console.log(JSON.stringify(wordMaps))
-      console.log(JSON.stringify(wordMaps, undefined, 2))
+      callback(null, JSON.stringify(wordMaps, undefined, 2));
     });
-
   });
 }
 
@@ -99,4 +102,23 @@ function splitSegmentIntoWordMap(segment) {
 assert(process.argv[2], 'expected argv[2] (YouTube Video ID')
 // console.log(process.argv)
 
-getCaptionsFromVideoId(process.argv[2]);
+getCaptionsFromVideoId(process.argv[2], function (err, captions) {
+  for (var i = 0; i < captions.length; i++) {
+    var caption = captions[i];
+
+    search.index({
+      index: 'words',
+      type: 'word',
+      id: uuid.v1(),
+      body: {
+        word: caption.word,
+        video_id: caption.video_id,
+        end: caption.end,
+        start: caption.start
+      }
+    }, function (error, response) {
+      console.log(error);
+      console.log(response);
+    });
+  }
+});
