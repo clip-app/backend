@@ -10,7 +10,7 @@ var uuid    = require('node-uuid');
 var md5     = require('MD5');
 
 var search = new elasticsearch.Client({
-    host: 'localhost:9200',
+    host: 'http://plato.hackedu.us:9200',
     log: 'info'
 });
 
