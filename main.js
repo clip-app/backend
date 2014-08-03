@@ -1,17 +1,18 @@
-var elasticsearch = require('elasticsearch');
-var assert  = require('assert');
-var _       = require('underscore');
-var request = require('superagent');
-var xml2js  = require('xml2js');
-var Youtube = require('youtube-api');
-var ent     = require('ent');
-var async   = require('async');
-var uuid    = require('node-uuid');
-var md5     = require('MD5');
+var mongoose = require('mongoose');
+var assert   = require('assert');
+var _        = require('underscore');
+var request  = require('superagent');
+var xml2js   = require('xml2js');
+var Youtube  = require('youtube-api');
+var ent      = require('ent');
+var async    = require('async');
+var uuid     = require('node-uuid');
+var md5      = require('MD5');
 
-var search = new elasticsearch.Client({
-    host: 'http://plato.hackedu.us:9200',
-    log: 'info'
+var Word     = require('./word');
+
+mongoose.connect("mongodb://plato.hackedu.us:27017", function () {
+  console.log("connected to mongodb", arguments);
 });
 
 Youtube.authenticate({
@@ -107,20 +108,26 @@ assert(process.argv[2], 'expected argv[2] (YouTube Video ID')
 
 getCaptionsFromVideoId(process.argv[2], function (err, captions) {
   _.each(captions, function(caption) {
-    search.index({
-      index: 'words',
-      type: 'word',
-      id: md5(""+caption.video_id+caption.word+caption.start+caption.end),
-      body: {
-        word: caption.word,
-        video_id: caption.video_id,
-        end: caption.end,
-        start: caption.start
-      }
-    }, function (err, response) {
-      if (err) {
-        console.log(err);
-      }
+    if (!caption.word) return;
+    // console.log(caption);
+    var word = new Word({
+      topic: 'hilary',
+      word: caption.word,
+      video_id: caption.video_id,
+      end: caption.end,
+      start: caption.start
     });
+
+    // console.log(word);
+
+    word.save(function (err) {
+      if (err) {
+        console.log(caption);
+        console.log(err);
+        console.log("ERR!!!!!");
+      }
+      console.log(arguments);
+    });
+
   });
 });
