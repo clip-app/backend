@@ -29,7 +29,8 @@ function getCaptionsFromVideoId(videoId, callback) {
     }
     xml2js.parseString(res.text, function (err, result) {
       // console.dir(result.transcript);
-      return _.map(result.transcript.text, function(textElement) {
+      var segments = _.map(result.transcript.text, function(textElement) {
+
         var text = ent.decode(textElement._).replace('\n', ' ');
         if (text.indexOf(':') !== -1) {
           console.log('THOUGHT SPEAKER!!! (V)');
@@ -37,6 +38,7 @@ function getCaptionsFromVideoId(videoId, callback) {
           text = text.split(':')[1].trim();
           console.log([text]);
         }
+
         // function remove
         if (text.indexOf('(') !== -1 || text.indexOf(')') !== -1 ||
            text.indexOf('[') !== -1 || text.indexOf(']') !== -1) {
@@ -103,9 +105,8 @@ assert(process.argv[2], 'expected argv[2] (YouTube Video ID')
 // console.log(process.argv)
 
 getCaptionsFromVideoId(process.argv[2], function (err, captions) {
-  for (var i = 0; i < captions.length; i++) {
-    var caption = captions[i];
-
+  console.log("hello!");
+  _.each(captions, function(caption) {
     search.index({
       index: 'words',
       type: 'word',
@@ -116,9 +117,9 @@ getCaptionsFromVideoId(process.argv[2], function (err, captions) {
         end: caption.end,
         start: caption.start
       }
-    }, function (error, response) {
-      console.log(error);
+    }, function (err, response) {
+      console.log(err);
       console.log(response);
     });
-  }
+  });
 });
